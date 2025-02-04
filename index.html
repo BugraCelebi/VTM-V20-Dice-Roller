@@ -4,197 +4,394 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VTM v20 Dice Roller</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --blood-red: #5a0000;
+            --dark-bg: #1a1a1a;
+            --container-bg: #2a2a2a;
+        }
+
         body {
-            font-family: 'Helvetica', Arial, sans-serif;
-            max-width: 500px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #f0f0f0;
+            font-family: 'MedievalSharp', cursive;
+            background: var(--dark-bg);
+            color: #e0e0e0;
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
-            background-color: white;
-            padding: 20px;
+            background: var(--container-bg);
+            padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid var(--blood-red);
+            box-shadow: 0 0 20px rgba(90,0,0,0.4);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::after {
+            content: "";
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(90,0,0,0.1) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         h1 {
+            font-family: 'Cinzel Decorative', cursive;
+            color: var(--blood-red);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             text-align: center;
-            color: #333;
-            margin-bottom: 20px;
+            margin: 0 0 2rem 0;
+            font-size: 2.2rem;
         }
 
         .input-group {
-            margin-bottom: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            padding: 1rem;
+            background: #333;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:hover {
+            transform: translateX(5px);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
         }
 
         label {
-            display: inline-block;
-            width: 150px;
-            margin-bottom: 5px;
+            justify-self: end;
+            color: #aaa;
+            font-size: 1.1rem;
         }
 
         input[type="number"] {
-            width: 60px;
-            padding: 5px;
+            background: #444;
+            border: 1px solid #666;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            width: 80px;
         }
 
         button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 24px;
+            background: var(--blood-red);
+            color: #fff;
+            padding: 1rem 2rem;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.2rem;
             width: 100%;
-            margin-top: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
 
         button:hover {
-            background-color: #45a049;
+            background: #7a0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(122,0,0,0.4);
+        }
+
+        button::after {
+            content: "✠";
+            position: absolute;
+            right: 20px;
+            opacity: 0.3;
         }
 
         #results {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f8f8;
-            border-radius: 4px;
+            border: 1px solid var(--blood-red);
+            padding: 2rem;
+            margin-top: 2rem;
+            position: relative;
             min-height: 200px;
+            background: linear-gradient(45deg, #2a2a2a, #1a1a1a);
+            border-radius: 4px;
+        }
+
+        #results::before {
+            content: "✠";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: rgba(90,0,0,0.1);
+            pointer-events: none;
+        }
+
+        .dice-result {
+            display: inline-block;
+            margin: 0.3rem;
+            padding: 0.5rem 1rem;
+            background: #333;
+            border-radius: 4px;
+            animation: diceRoll 0.5s ease-out;
+            font-size: 1.1rem;
+        }
+
+        @keyframes diceRoll {
+            0% { transform: rotate(0deg) scale(0); opacity: 0; }
+            100% { transform: rotate(360deg) scale(1); opacity: 1; }
         }
 
         .crit {
-            color: green;
+            color: #00ff00;
             font-weight: bold;
+            text-shadow: 0 0 8px rgba(0,255,0,0.4);
         }
 
         .botch {
-            color: red;
+            color: #ff0000;
             font-weight: bold;
+            text-shadow: 0 0 8px rgba(255,0,0,0.4);
         }
 
         .bold {
             font-weight: bold;
+            font-size: 1.1rem;
+            margin: 1rem 0;
+        }
+
+        input[type="checkbox"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 40px;
+            height: 20px;
+            background: #444;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--blood-red);
+        }
+
+        input[type="checkbox"]::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #888;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        input[type="checkbox"]:checked::after {
+            left: calc(100% - 18px);
+            background: #ff0000;
+        }
+
+        .loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .loading::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            border: 3px solid var(--blood-red);
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+            margin: -12px 0 0 -12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            label {
+                justify-self: start;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Vampire: The Masquerade v20 Dice Roller</h1>
+        <h1>Vampire: The Masquerade v20<br>Dice Roller</h1>
         
         <div class="input-group">
-            <label for="dicePool">Dice Pool:</label>
+            <label for="dicePool">Zar Havuzu:</label>
             <input type="number" id="dicePool" min="1" max="50" value="5">
         </div>
         
         <div class="input-group">
-            <label for="difficulty">Difficulty:</label>
+            <label for="difficulty">Zorluk Derecesi:</label>
             <input type="number" id="difficulty" min="2" max="10" value="6">
         </div>
         
         <div class="input-group">
-            <label for="critical">10s Extra Success:</label>
+            <label for="critical">10'lar Ekstra Başarı:</label>
             <input type="checkbox" id="critical" checked>
         </div>
 
-        <button onclick="rollDice()">ROLL DICE</button>
+        <button onclick="rollDice()">ZARLARI AT</button>
 
         <div id="results"></div>
     </div>
 
     <script>
-        function rollDice() {
-            // Get input values
-            const dicePool = parseInt(document.getElementById('dicePool').value);
-            const difficulty = parseInt(document.getElementById('difficulty').value);
-            const criticalExtra = document.getElementById('critical').checked;
+        async function rollDice() {
+            const button = document.querySelector('button');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // Show loading state
+                button.classList.add('loading');
+                resultsDiv.innerHTML = '';
 
-            // Validate inputs
-            if (isNaN(dicePool) || dicePool < 1 || dicePool > 50 ||
-                isNaN(difficulty) || difficulty < 2 || difficulty > 10) {
-                alert("Invalid input values!");
-                return;
-            }
+                // Get input values
+                const dicePool = parseInt(document.getElementById('dicePool').value);
+                const difficulty = parseInt(document.getElementById('difficulty').value);
+                const criticalExtra = document.getElementById('critical').checked;
 
-            let rolls = [];
-            let successes = 0;
-            let ones = 0;
+                // Validate inputs
+                if (isNaN(dicePool) || dicePool < 1 || dicePool > 50 ||
+                    isNaN(difficulty) || difficulty < 2 || difficulty > 10) {
+                    throw new Error("Geçersiz değer girişi!");
+                }
 
-            // Simulate dice rolls
-            for (let i = 0; i < dicePool; i++) {
-                let currentRoll = Math.floor(Math.random() * 10) + 1;
-                rolls.push(currentRoll);
+                // Simulate dice rolling delay
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-                // Check for success and criticals
-                while (true) {
-                    if (currentRoll >= difficulty) successes++;
-                    if (currentRoll === 1) ones++;
+                let rolls = [];
+                let successes = 0;
+                let ones = 0;
 
-                    // Handle critical rerolls
-                    if (currentRoll === 10 && criticalExtra) {
-                        successes++;
-                        currentRoll = Math.floor(Math.random() * 10) + 1;
-                        rolls.push(currentRoll);
-                    } else {
-                        break;
+                // Simulate dice rolls
+                for (let i = 0; i < dicePool; i++) {
+                    let currentRoll = Math.floor(Math.random() * 10) + 1;
+                    rolls.push(currentRoll);
+
+                    while (true) {
+                        if (currentRoll >= difficulty) successes++;
+                        if (currentRoll === 1) ones++;
+
+                        if (currentRoll === 10 && criticalExtra) {
+                            successes++;
+                            currentRoll = Math.floor(Math.random() * 10) + 1;
+                            rolls.push(currentRoll);
+                        } else {
+                            break;
+                        }
                     }
                 }
+
+                // Calculate net successes
+                const netSuccesses = successes - ones;
+
+                // Display results
+                showResults(rolls, successes, ones, netSuccesses);
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                button.classList.remove('loading');
             }
+        }
 
-            // Calculate net successes
-            const netSuccesses = successes - ones;
-
-            // Display results
+        function showResults(rolls, successes, ones, netSuccesses) {
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
 
             // Show dice rolls
             const rollsHeader = document.createElement('div');
             rollsHeader.className = 'bold';
-            rollsHeader.textContent = 'Rolls:';
+            rollsHeader.textContent = 'Atılan Zarlar:';
             resultsDiv.appendChild(rollsHeader);
 
             const rollsContainer = document.createElement('div');
+            rollsContainer.style.margin = '1rem 0';
+            
             rolls.forEach(roll => {
-                const span = document.createElement('span');
-                span.textContent = roll + ' ';
+                const die = document.createElement('span');
+                die.className = 'dice-result';
+                die.textContent = roll;
                 
                 if (roll === 10) {
-                    span.className = 'crit';
+                    die.classList.add('crit');
                 } else if (roll === 1) {
-                    span.className = 'botch';
+                    die.classList.add('botch');
                 }
                 
-                rollsContainer.appendChild(span);
+                rollsContainer.appendChild(die);
             });
             resultsDiv.appendChild(rollsContainer);
 
             // Show results breakdown
             const resultsHeader = document.createElement('div');
             resultsHeader.className = 'bold';
-            resultsHeader.textContent = '\nResults:';
+            resultsHeader.textContent = 'Sonuçlar:';
             resultsDiv.appendChild(resultsHeader);
 
-            resultsDiv.innerHTML += `
-                <div>Total Successes: ${successes}</div>
-                <div>Ones: ${ones}</div>
-            `;
+            const successDiv = document.createElement('div');
+            successDiv.textContent = `Toplam Başarı: ${successes}`;
+            resultsDiv.appendChild(successDiv);
+
+            const onesDiv = document.createElement('div');
+            onesDiv.textContent = `1'lerin Sayısı: ${ones}`;
+            resultsDiv.appendChild(onesDiv);
 
             // Show final outcome
             const outcome = document.createElement('div');
             outcome.className = 'bold';
+            outcome.style.marginTop = '1rem';
+            outcome.style.fontSize = '1.2rem';
             
             if (netSuccesses > 0) {
-                outcome.textContent = `Net Successes: ${netSuccesses} - SUCCESS!`;
-                outcome.style.color = 'green';
+                outcome.textContent = `Net Başarı: ${netSuccesses} - BAŞARILI!`;
+                outcome.style.color = '#00ff00';
+                outcome.style.textShadow = '0 0 8px rgba(0,255,0,0.4)';
             } else if (netSuccesses === 0) {
-                outcome.textContent = 'Net Successes: 0 - FAILURE!';
-                outcome.style.color = 'red';
+                outcome.textContent = 'Net Başarı: 0 - BAŞARISIZ!';
+                outcome.style.color = '#ff0000';
+                outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
             } else {
-                outcome.textContent = 'Net Successes: 0 - BOTCH!';
-                outcome.style.color = 'red';
+                outcome.textContent = 'Net Başarı: 0 - BOTCH!';
+                outcome.style.color = '#ff0000';
+                outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
             }
             
             resultsDiv.appendChild(outcome);
