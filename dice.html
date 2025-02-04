@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTM v20 Dice Roller</title>
+    <style>
+        body {
+            font-family: 'Helvetica', Arial, sans-serif;
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: inline-block;
+            width: 150px;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+            min-height: 200px;
+        }
+
+        .crit {
+            color: green;
+            font-weight: bold;
+        }
+
+        .botch {
+            color: red;
+            font-weight: bold;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Vampire: The Masquerade v20 Dice Roller</h1>
+        
+        <div class="input-group">
+            <label for="dicePool">Dice Pool:</label>
+            <input type="number" id="dicePool" min="1" max="50" value="5">
+        </div>
+        
+        <div class="input-group">
+            <label for="difficulty">Difficulty:</label>
+            <input type="number" id="difficulty" min="2" max="10" value="6">
+        </div>
+        
+        <div class="input-group">
+            <label for="critical">10s Extra Success:</label>
+            <input type="checkbox" id="critical" checked>
+        </div>
+
+        <button onclick="rollDice()">ROLL DICE</button>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function rollDice() {
+            // Get input values
+            const dicePool = parseInt(document.getElementById('dicePool').value);
+            const difficulty = parseInt(document.getElementById('difficulty').value);
+            const criticalExtra = document.getElementById('critical').checked;
+
+            // Validate inputs
+            if (isNaN(dicePool) || dicePool < 1 || dicePool > 50 ||
+                isNaN(difficulty) || difficulty < 2 || difficulty > 10) {
+                alert("Invalid input values!");
+                return;
+            }
+
+            let rolls = [];
+            let successes = 0;
+            let ones = 0;
+
+            // Simulate dice rolls
+            for (let i = 0; i < dicePool; i++) {
+                let currentRoll = Math.floor(Math.random() * 10) + 1;
+                rolls.push(currentRoll);
+
+                // Check for success and criticals
+                while (true) {
+                    if (currentRoll >= difficulty) successes++;
+                    if (currentRoll === 1) ones++;
+
+                    // Handle critical rerolls
+                    if (currentRoll === 10 && criticalExtra) {
+                        successes++;
+                        currentRoll = Math.floor(Math.random() * 10) + 1;
+                        rolls.push(currentRoll);
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            // Calculate net successes
+            const netSuccesses = successes - ones;
+
+            // Display results
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            // Show dice rolls
+            const rollsHeader = document.createElement('div');
+            rollsHeader.className = 'bold';
+            rollsHeader.textContent = 'Rolls:';
+            resultsDiv.appendChild(rollsHeader);
+
+            const rollsContainer = document.createElement('div');
+            rolls.forEach(roll => {
+                const span = document.createElement('span');
+                span.textContent = roll + ' ';
+                
+                if (roll === 10) {
+                    span.className = 'crit';
+                } else if (roll === 1) {
+                    span.className = 'botch';
+                }
+                
+                rollsContainer.appendChild(span);
+            });
+            resultsDiv.appendChild(rollsContainer);
+
+            // Show results breakdown
+            const resultsHeader = document.createElement('div');
+            resultsHeader.className = 'bold';
+            resultsHeader.textContent = '\nResults:';
+            resultsDiv.appendChild(resultsHeader);
+
+            resultsDiv.innerHTML += `
+                <div>Total Successes: ${successes}</div>
+                <div>Ones: ${ones}</div>
+            `;
+
+            // Show final outcome
+            const outcome = document.createElement('div');
+            outcome.className = 'bold';
+            
+            if (netSuccesses > 0) {
+                outcome.textContent = `Net Successes: ${netSuccesses} - SUCCESS!`;
+                outcome.style.color = 'green';
+            } else if (netSuccesses === 0) {
+                outcome.textContent = 'Net Successes: 0 - FAILURE!';
+                outcome.style.color = 'red';
+            } else {
+                outcome.textContent = 'Net Successes: 0 - BOTCH!';
+                outcome.style.color = 'red';
+            }
+            
+            resultsDiv.appendChild(outcome);
+        }
+    </script>
+</body>
+</html>
