@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VTM v20 Dice Roller</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --blood-red: #a81919;
@@ -22,6 +23,7 @@
             justify-content: center;
             align-items: center;
         }
+
 
         .container {
             background: var(--container-bg);
@@ -72,6 +74,10 @@
             box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
         }
 
+        .input-group.willpower {
+            grid-template-columns: 1fr 1fr;
+        }
+
         label {
             justify-self: end;
             color: #aaa;
@@ -111,7 +117,7 @@
         }
 
         button::after {
-            content: "✠";
+            content: "☥";
             position: absolute;
             right: 20px;
             opacity: 0.3;
@@ -128,7 +134,7 @@
         }
 
         #results::before {
-            content: "✠";
+            content: "𓋹";
             position: absolute;
             top: 50%;
             left: 50%;
@@ -246,6 +252,77 @@
                 font-size: 1.8rem;
             }
         }
+
+        #history {
+            margin-top: 2rem;
+            border-top: 2px solid var(--blood-red);
+            padding-top: 1rem;
+        }
+
+        #history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .history-item {
+            background: #333;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            transform: translateX(5px);
+            background: #3a3a3a;
+        }
+
+
+        .history-details {
+            display: none;
+            padding-top: 0.5rem;
+
+        }
+
+        .history-details.show {
+            display: block;
+        }
+
+        .history-rolls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+
+        .history-dice {
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+
+        #clear-history {
+            background: #4a0000;
+            padding: 0.5rem 2.5rem;
+            font-size: 0.8rem;
+            border-radius: 3px;
+            display: block;
+            margin: 0 auto 1rem auto;
+            width: fit-content;
+            transition: all 0.2s ease;
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        #clear-history::after {
+            content: none !important; /* Sembolü kaldır */
+        }
+
+        #clear-history:hover {
+            background: #3a0000;
+            transform: scale(0.95);
+        }
     </style>
 </head>
 <body>
@@ -253,26 +330,41 @@
         <h1>Vampire: The Masquerade v20<br>Dice Roller</h1>
         
         <div class="input-group">
-            <label for="dicePool">Zar Havuzu:</label>
+            <label for="dicePool">Dice Pool:</label>
             <input type="number" id="dicePool" min="1" max="50" value="5">
         </div>
         
         <div class="input-group">
-            <label for="difficulty">Zorluk Derecesi:</label>
+            <label for="difficulty">Difficulty:</label>
             <input type="number" id="difficulty" min="2" max="10" value="6">
         </div>
         
         <div class="input-group">
-            <label for="critical">10'lar Ekstra Başarı:</label>
-            <input type="checkbox" id="critical" checked>
+            <label for="critical">Critical Success:</label>
+            <input type="checkbox" id="critical">
         </div>
 
-        <button onclick="rollDice()">ZARLARI AT</button>
+         <!-- Yeni Willpower checkbox'ı eklendi -->
+         <div class="input-group willpower">
+            <label for="willpower">Willpower:</label>
+            <input type="checkbox" id="willpower">
+        </div>
+
+        <button onclick="rollDice()">ROLE DICE</button>
 
         <div id="results"></div>
+
+        <div id="history">
+                <h3>HISTORY</h3>
+                <button id="clear-history" onclick="clearHistory()">CLEAR HISTORY</button>
+            <div id="history-list"></div>
+        </div>
+
     </div>
 
     <script>
+        let rollHistory = JSON.parse(localStorage.getItem('vtmDiceHistory')) || [];
+
         async function rollDice() {
             const button = document.querySelector('button');
             const resultsDiv = document.getElementById('results');
@@ -319,11 +411,14 @@
                     }
                 }
 
+                const willpower = document.getElementById('willpower').checked;
+
                 // Calculate net successes
-                const netSuccesses = successes - ones;
+                let netSuccesses = successes - ones;
+                if(willpower) netSuccesses = Math.max(netSuccesses + 1, 0); // Negatif olmamasını sağla
 
                 // Display results
-                showResults(rolls, successes, ones, netSuccesses);
+                showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra);
 
             } catch (error) {
                 alert(error.message);
@@ -332,14 +427,14 @@
             }
         }
 
-        function showResults(rolls, successes, ones, netSuccesses) {
+        function showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra) {
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
 
             // Show dice rolls
             const rollsHeader = document.createElement('div');
             rollsHeader.className = 'bold';
-            rollsHeader.textContent = 'Atılan Zarlar:';
+            rollsHeader.textContent = 'Rolling Dice:';
             resultsDiv.appendChild(rollsHeader);
 
             const rollsContainer = document.createElement('div');
@@ -363,16 +458,25 @@
             // Show results breakdown
             const resultsHeader = document.createElement('div');
             resultsHeader.className = 'bold';
-            resultsHeader.textContent = 'Sonuçlar:';
+            resultsHeader.textContent = 'Results:';
             resultsDiv.appendChild(resultsHeader);
 
             const successDiv = document.createElement('div');
-            successDiv.textContent = `Toplam Başarı: ${successes}`;
+            successDiv.textContent = `Success: ${successes}`;
             resultsDiv.appendChild(successDiv);
 
             const onesDiv = document.createElement('div');
-            onesDiv.textContent = `1'lerin Sayısı: ${ones}`;
+            onesDiv.textContent = `Ones: ${ones}`;
             resultsDiv.appendChild(onesDiv);
+
+            if(willpower) {
+                const willpowerDiv = document.createElement('div');
+                willpowerDiv.className = 'bold';
+                willpowerDiv.textContent = 'Willpower +1';
+                willpowerDiv.style.color = '#ff9900';
+                willpowerDiv.style.textShadow = '0 0 8px rgba(255,153,0,0.4)';
+                resultsDiv.appendChild(willpowerDiv);
+            }
 
             // Show final outcome
             const outcome = document.createElement('div');
@@ -381,21 +485,96 @@
             outcome.style.fontSize = '1.2rem';
             
             if (netSuccesses > 0) {
-                outcome.textContent = `Net Başarı: ${netSuccesses} - BAŞARILI!`;
+                outcome.textContent = `Total Success: ${netSuccesses} - ACTION SUCCESSFUL!`;
                 outcome.style.color = '#00ff00';
                 outcome.style.textShadow = '0 0 8px rgba(0,255,0,0.4)';
             } else if (netSuccesses === 0) {
-                outcome.textContent = 'Net Başarı: 0 - BAŞARISIZ!';
+                outcome.textContent = 'Total Success: 0 - ACTION FAILED!';
                 outcome.style.color = '#ff0000';
                 outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
             } else {
-                outcome.textContent = 'Net Başarı: 0 - BOTCH!';
+                outcome.textContent = 'Total Success: 0 - BOTCH!';
                 outcome.style.color = '#ff0000';
                 outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
             }
             
             resultsDiv.appendChild(outcome);
+
+
+            // Sonuçları gösterdikten sonra geçmişe ekle
+            const rollData = {
+                date: new Date().toLocaleString(),
+                dicePool: dicePool,
+                difficulty: difficulty,
+                rolls: rolls,
+                successes: successes,
+                ones: ones,
+                netSuccesses: netSuccesses,
+                willpower: willpower,
+                critical: criticalExtra
+            };
+            
+            addToHistory(rollData);
         }
+
+        function addToHistory(data) {
+            rollHistory.unshift(data);
+            
+            // Maksimum 15 kayıt tut
+            if(rollHistory.length > 15) {
+                rollHistory.pop();
+            }
+            
+            localStorage.setItem('vtmDiceHistory', JSON.stringify(rollHistory));
+            updateHistoryDisplay();
+        }
+
+        function clearHistory() {
+            if(confirm("Are you sure you want to permanently delete all history?")) {
+                rollHistory = [];
+                localStorage.removeItem('vtmDiceHistory');
+                updateHistoryDisplay();
+            }
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            rollHistory.forEach((item, index) => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.innerHTML = `
+                    
+                    <div class="history-details">
+                        <div>Dice Pool: ${item.dicePool}</div>
+                        <div>Difficulty: ${item.difficulty}</div>
+                        <div class="history-rolls">
+                            ${item.rolls.map(roll => 
+                                `<span class="history-dice ${roll === 10 ? 'crit' : ''} ${roll === 1 ? 'botch' : ''}">
+                                    ${roll}
+                                </span>`
+                            ).join('')}
+                        </div>
+                        <div>Success: ${item.successes}</div>
+                        <div>Ones: ${item.ones}</div>
+                        <div>Critical Success: ${item.critical ? 'Yes' : 'No'}</div>
+                        <div>Willpower: ${item.willpower ? 'Yes' : 'No'}</div>
+                        <div>Total Success: ${item.netSuccesses} | ${item.netSuccesses > 0 ? '✅' : item.netSuccesses < 0 ? '❌' : '➖'}</div>
+                    </div>
+                `;
+                
+                // Detayları göster/gizle
+                const details = historyItem.querySelector('.history-details');
+                details.classList.toggle('show');
+                
+
+                historyList.appendChild(historyItem);
+            });
+        }
+
+        // Sayfa yüklendiğinde geçmişi göster
+        updateHistoryDisplay();
     </script>
 </body>
 </html>
