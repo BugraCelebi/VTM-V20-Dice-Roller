@@ -1,580 +1,590 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VTM v20 Dice Roller</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --blood-red: #a81919;
-            --dark-bg: #1a1a1a;
-            --container-bg: #2a2a2a;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VTM v20 Dice Roller</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=MedievalSharp&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --blood-red: #a81919;
+        --dark-bg: #1a1a1a;
+        --container-bg: #2a2a2a;
+    }
 
-        body {
-            font-family: 'MedievalSharp', cursive;
-            background: var(--dark-bg);
-            color: #e0e0e0;
-            min-height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    body {
+        font-family: 'MedievalSharp', cursive;
+        background: var(--dark-bg);
+        color: #e0e0e0;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
+    .container {
+        background: var(--container-bg);
+        padding: 2rem;
+        border-radius: 8px;
+        border: 2px solid var(--blood-red);
+        box-shadow: 0 0 20px rgba(90,0,0,0.4);
+        width: 90%;
+        max-width: 600px;
+        position: relative;
+        overflow: hidden;
+    }
 
+    .container::after {
+        content: "";
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 150px;
+        height: 150px;
+        background: radial-gradient(circle, rgba(90,0,0,0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    h1 {
+        font-family: 'Cinzel Decorative', cursive;
+        color: var(--blood-red);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        text-align: center;
+        margin: 0 0 2rem 0;
+        font-size: 2.2rem;
+    }
+
+    .input-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        align-items: center;
+        padding: 1rem;
+        background: #333;
+        border-radius: 5px;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .input-group:hover {
+        transform: translateX(5px);
+        box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
+    }
+
+    .input-group.willpower {
+        grid-template-columns: 1fr 1fr;
+    }
+    .input-group.combat-mode label {
+        color: #00bfff;
+    }
+
+    label {
+        justify-self: end;
+        color: #aaa;
+        font-size: 1.1rem;
+    }
+
+    input[type="number"] {
+        background: #444;
+        border: 1px solid #666;
+        color: #fff;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 1.1rem;
+        width: 80px;
+    }
+
+    button {
+        background: var(--blood-red);
+        color: #fff;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: 'Cinzel Decorative', cursive;
+        font-size: 1.2rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    button:hover {
+        background: #7a0000;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(122,0,0,0.4);
+    }
+
+    button::after {
+        content: "☥";
+        position: absolute;
+        right: 20px;
+        opacity: 0.3;
+    }
+
+    #results {
+        border: 1px solid var(--blood-red);
+        padding: 2rem;
+        margin-top: 2rem;
+        position: relative;
+        min-height: 200px;
+        background: linear-gradient(45deg, #2a2a2a, #1a1a1a);
+        border-radius: 4px;
+    }
+
+    #results::before {
+        content: "𓋹";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 4em;
+        color: rgba(90,0,0,0.1);
+        pointer-events: none;
+    }
+
+    .dice-result {
+        display: inline-block;
+        margin: 0.3rem;
+        padding: 0.5rem 1rem;
+        background: #333;
+        border-radius: 4px;
+        animation: diceRoll 0.5s ease-out;
+        font-size: 1.1rem;
+    }
+
+    @keyframes diceRoll {
+        0% { transform: rotate(0deg) scale(0); opacity: 0; }
+        100% { transform: rotate(360deg) scale(1); opacity: 1; }
+    }
+
+    .crit {
+        color: #00ff00;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(0,255,0,0.4);
+    }
+
+    .botch {
+        color: #ff0000;
+        font-weight: bold;
+        text-shadow: 0 0 8px rgba(255,0,0,0.4);
+    }
+
+    .bold {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin: 1rem 0;
+    }
+
+    input[type="checkbox"] {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 40px;
+        height: 20px;
+        background: #444;
+        border-radius: 10px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    input[type="checkbox"]:checked {
+        background: var(--blood-red);
+    }
+
+    input[type="checkbox"]::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        background: #888;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    input[type="checkbox"]:checked::after {
+        left: calc(100% - 18px);
+        background: #ff0000;
+    }
+
+    .loading {
+        position: relative;
+        color: transparent !important;
+        pointer-events: none;
+    }
+
+    .loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 24px;
+        height: 24px;
+        border: 3px solid var(--blood-red);
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 0.8s linear infinite;
+        margin: -12px 0 0 -12px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 480px) {
         .container {
-            background: var(--container-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            border: 2px solid var(--blood-red);
-            box-shadow: 0 0 20px rgba(90,0,0,0.4);
-            width: 90%;
-            max-width: 600px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .container::after {
-            content: "";
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 150px;
-            height: 150px;
-            background: radial-gradient(circle, rgba(90,0,0,0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
-        h1 {
-            font-family: 'Cinzel Decorative', cursive;
-            color: var(--blood-red);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            text-align: center;
-            margin: 0 0 2rem 0;
-            font-size: 2.2rem;
+            padding: 1rem;
+            margin: 1rem;
         }
 
         .input-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            align-items: center;
-            padding: 1rem;
-            background: #333;
-            border-radius: 5px;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-group:hover {
-            transform: translateX(5px);
-            box-shadow: 3px 3px 8px rgba(0,0,0,0.2);
-        }
-
-        .input-group.willpower {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
         }
 
         label {
-            justify-self: end;
-            color: #aaa;
-            font-size: 1.1rem;
+            justify-self: start;
         }
 
-        input[type="number"] {
-            background: #444;
-            border: 1px solid #666;
-            color: #fff;
-            padding: 0.5rem;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 1.1rem;
-            width: 80px;
+        h1 {
+            font-size: 1.8rem;
         }
+    }
 
-        button {
-            background: var(--blood-red);
-            color: #fff;
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Cinzel Decorative', cursive;
-            font-size: 1.2rem;
-            width: 100%;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
+    #history {
+        margin-top: 2rem;
+        border-top: 2px solid var(--blood-red);
+        padding-top: 1rem;
+    }
 
-        button:hover {
-            background: #7a0000;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(122,0,0,0.4);
-        }
+    #history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
 
-        button::after {
-            content: "☥";
-            position: absolute;
-            right: 20px;
-            opacity: 0.3;
-        }
+    .history-item {
+        background: #333;
+        border-radius: 4px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
 
-        #results {
-            border: 1px solid var(--blood-red);
-            padding: 2rem;
-            margin-top: 2rem;
-            position: relative;
-            min-height: 200px;
-            background: linear-gradient(45deg, #2a2a2a, #1a1a1a);
-            border-radius: 4px;
-        }
+    .history-item:hover {
+        transform: translateX(5px);
+        background: #3a3a3a;
+    }
 
-        #results::before {
-            content: "𓋹";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 4em;
-            color: rgba(90,0,0,0.1);
-            pointer-events: none;
-        }
+    .history-details {
+        display: none;
+        padding-top: 0.5rem;
+    }
 
-        .dice-result {
-            display: inline-block;
-            margin: 0.3rem;
-            padding: 0.5rem 1rem;
-            background: #333;
-            border-radius: 4px;
-            animation: diceRoll 0.5s ease-out;
-            font-size: 1.1rem;
-        }
+    .history-details.show {
+        display: block;
+    }
 
-        @keyframes diceRoll {
-            0% { transform: rotate(0deg) scale(0); opacity: 0; }
-            100% { transform: rotate(360deg) scale(1); opacity: 1; }
-        }
+    .history-rolls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
 
-        .crit {
-            color: #00ff00;
-            font-weight: bold;
-            text-shadow: 0 0 8px rgba(0,255,0,0.4);
-        }
+    .history-dice {
+        padding: 0.2rem 0.5rem;
+        border-radius: 3px;
+        font-size: 0.9rem;
+    }
 
-        .botch {
-            color: #ff0000;
-            font-weight: bold;
-            text-shadow: 0 0 8px rgba(255,0,0,0.4);
-        }
+    #clear-history {
+        background: #4a0000;
+        padding: 0.5rem 2.5rem;
+        font-size: 0.8rem;
+        border-radius: 3px;
+        display: block;
+        margin: 0 auto 1rem auto;
+        width: fit-content;
+        transition: all 0.2s ease;
+        font-family: 'MedievalSharp', cursive;
+    }
 
-        .bold {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin: 1rem 0;
-        }
+    #clear-history::after {
+        content: none !important;
+    }
 
-        input[type="checkbox"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 40px;
-            height: 20px;
-            background: #444;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        input[type="checkbox"]:checked {
-            background: var(--blood-red);
-        }
-
-        input[type="checkbox"]::after {
-            content: "";
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: #888;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        input[type="checkbox"]:checked::after {
-            left: calc(100% - 18px);
-            background: #ff0000;
-        }
-
-        .loading {
-            position: relative;
-            color: transparent !important;
-            pointer-events: none;
-        }
-
-        .loading::after {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 24px;
-            height: 24px;
-            border: 3px solid var(--blood-red);
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 0.8s linear infinite;
-            margin: -12px 0 0 -12px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 1rem;
-                margin: 1rem;
-            }
-
-            .input-group {
-                grid-template-columns: 1fr;
-            }
-
-            label {
-                justify-self: start;
-            }
-
-            h1 {
-                font-size: 1.8rem;
-            }
-        }
-
-        #history {
-            margin-top: 2rem;
-            border-top: 2px solid var(--blood-red);
-            padding-top: 1rem;
-        }
-
-        #history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .history-item {
-            background: #333;
-            border-radius: 4px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .history-item:hover {
-            transform: translateX(5px);
-            background: #3a3a3a;
-        }
-
-
-        .history-details {
-            display: none;
-            padding-top: 0.5rem;
-
-        }
-
-        .history-details.show {
-            display: block;
-        }
-
-        .history-rolls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.3rem;
-        }
-
-        .history-dice {
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.9rem;
-        }
-
-        #clear-history {
-            background: #4a0000;
-            padding: 0.5rem 2.5rem;
-            font-size: 0.8rem;
-            border-radius: 3px;
-            display: block;
-            margin: 0 auto 1rem auto;
-            width: fit-content;
-            transition: all 0.2s ease;
-            font-family: 'MedievalSharp', cursive;
-        }
-
-        #clear-history::after {
-            content: none !important; /* Sembolü kaldır */
-        }
-
-        #clear-history:hover {
-            background: #3a0000;
-            transform: scale(0.95);
-        }
-    </style>
+    #clear-history:hover {
+        background: #3a0000;
+        transform: scale(0.95);
+    }
+    .rolls-sum {
+        font-weight: bold;
+        color: #ffdd55;
+        margin-left: 10px;
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Vampire: The Masquerade v20<br>Dice Roller</h1>
-        
-        <div class="input-group">
-            <label for="dicePool">Dice Pool:</label>
-            <input type="number" id="dicePool" min="1" max="50" value="5">
-        </div>
-        
-        <div class="input-group">
-            <label for="difficulty">Difficulty:</label>
-            <input type="number" id="difficulty" min="2" max="10" value="6">
-        </div>
-        
-        <div class="input-group">
-            <label for="critical">Critical Success:</label>
-            <input type="checkbox" id="critical">
-        </div>
+<div class="container">
+    <h1>Vampire: The Masquerade v20<br>Dice Roller</h1>
 
-         <!-- Yeni Willpower checkbox'ı eklendi -->
-         <div class="input-group willpower">
-            <label for="willpower">Willpower:</label>
-            <input type="checkbox" id="willpower">
-        </div>
-
-        <button onclick="rollDice()">ROLE DICE</button>
-
-        <div id="results"></div>
-
-        <div id="history">
-                <h3>HISTORY</h3>
-                <button id="clear-history" onclick="clearHistory()">CLEAR HISTORY</button>
-            <div id="history-list"></div>
-        </div>
-
+    <div class="input-group">
+        <label for="dicePool">Dice Pool:</label>
+        <input type="number" id="dicePool" min="1" max="50" value="5">
     </div>
 
-    <script>
-        let rollHistory = JSON.parse(localStorage.getItem('vtmDiceHistory')) || [];
+    <div class="input-group">
+        <label for="difficulty">Difficulty:</label>
+        <input type="number" id="difficulty" min="2" max="10" value="6">
+    </div>
 
-        async function rollDice() {
-            const button = document.querySelector('button');
-            const resultsDiv = document.getElementById('results');
-            
-            try {
-                // Show loading state
-                button.classList.add('loading');
-                resultsDiv.innerHTML = '';
+    <div class="input-group">
+        <label for="critical">Critical Success:</label>
+        <input type="checkbox" id="critical">
+    </div>
 
-                // Get input values
-                const dicePool = parseInt(document.getElementById('dicePool').value);
-                const difficulty = parseInt(document.getElementById('difficulty').value);
-                const criticalExtra = document.getElementById('critical').checked;
+    <div class="input-group willpower">
+        <label for="willpower">Willpower:</label>
+        <input type="checkbox" id="willpower">
+    </div>
+    <!-- Combat Mode kutucuğu eklendi -->
+    <div class="input-group combat-mode">
+        <label for="combatMode">Combat Mode:</label>
+        <input type="checkbox" id="combatMode">
+    </div>
 
-                // Validate inputs
-                if (isNaN(dicePool) || dicePool < 1 || dicePool > 50 ||
-                    isNaN(difficulty) || difficulty < 2 || difficulty > 10) {
-                    throw new Error("Geçersiz değer girişi!");
-                }
+    <button onclick="rollDice()">ROLL DICE</button>
 
-                // Simulate dice rolling delay
-                await new Promise(resolve => setTimeout(resolve, 500));
+    <div id="results"></div>
 
-                let rolls = [];
-                let successes = 0;
-                let ones = 0;
+    <div id="history">
+        <h3>HISTORY</h3>
+        <button id="clear-history" onclick="clearHistory()">CLEAR HISTORY</button>
+        <div id="history-list"></div>
+    </div>
+</div>
 
-                // Simulate dice rolls
-                for (let i = 0; i < dicePool; i++) {
-                    let currentRoll = Math.floor(Math.random() * 10) + 1;
+<script>
+let rollHistory = JSON.parse(localStorage.getItem('vtmDiceHistory')) || [];
+
+async function rollDice() {
+    const button = document.querySelector('button');
+    const resultsDiv = document.getElementById('results');
+    
+    try {
+        button.classList.add('loading');
+        resultsDiv.innerHTML = '';
+
+        const dicePool = parseInt(document.getElementById('dicePool').value);
+        const difficulty = parseInt(document.getElementById('difficulty').value);
+        const criticalExtra = document.getElementById('critical').checked;
+        const willpower = document.getElementById('willpower').checked;
+        const combatMode = document.getElementById('combatMode').checked;
+
+        if (isNaN(dicePool) || dicePool < 1 || dicePool > 50 ||
+            isNaN(difficulty) || difficulty < 2 || difficulty > 10) {
+            throw new Error("Geçersiz değer girişi!");
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        let rolls = [];
+        let successes = 0;
+        let ones = 0;
+
+        for (let i = 0; i < dicePool; i++) {
+            let currentRoll = Math.floor(Math.random() * 10) + 1;
+            rolls.push(currentRoll);
+
+            while (true) {
+                if (currentRoll >= difficulty) successes++;
+                if (currentRoll === 1) ones++;
+
+                if (currentRoll === 10 && criticalExtra) {
+                    successes++;
+                    currentRoll = Math.floor(Math.random() * 10) + 1;
                     rolls.push(currentRoll);
-
-                    while (true) {
-                        if (currentRoll >= difficulty) successes++;
-                        if (currentRoll === 1) ones++;
-
-                        if (currentRoll === 10 && criticalExtra) {
-                            successes++;
-                            currentRoll = Math.floor(Math.random() * 10) + 1;
-                            rolls.push(currentRoll);
-                        } else {
-                            break;
-                        }
-                    }
+                } else {
+                    break;
                 }
-
-                const willpower = document.getElementById('willpower').checked;
-
-                // Calculate net successes
-                let netSuccesses = successes - ones;
-                if(willpower) netSuccesses = Math.max(netSuccesses + 1, 0); // Negatif olmamasını sağla
-
-                // Display results
-                showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra);
-
-            } catch (error) {
-                alert(error.message);
-            } finally {
-                button.classList.remove('loading');
             }
         }
 
-        function showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
+        let netSuccesses = combatMode ? successes : successes - ones;
+        if (willpower) netSuccesses = Math.max(netSuccesses + 1, 0);
 
-            // Show dice rolls
-            const rollsHeader = document.createElement('div');
-            rollsHeader.className = 'bold';
-            rollsHeader.textContent = 'Rolling Dice:';
-            resultsDiv.appendChild(rollsHeader);
+        showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra, combatMode);
 
-            const rollsContainer = document.createElement('div');
-            rollsContainer.style.margin = '1rem 0';
-            
-            rolls.forEach(roll => {
-                const die = document.createElement('span');
-                die.className = 'dice-result';
-                die.textContent = roll;
-                
-                if (roll === 10) {
-                    die.classList.add('crit');
-                } else if (roll === 1) {
-                    die.classList.add('botch');
-                }
-                
-                rollsContainer.appendChild(die);
-            });
-            resultsDiv.appendChild(rollsContainer);
+    } catch (error) {
+        alert(error.message);
+    } finally {
+        button.classList.remove('loading');
+    }
+}
 
-            // Show results breakdown
-            const resultsHeader = document.createElement('div');
-            resultsHeader.className = 'bold';
-            resultsHeader.textContent = 'Results:';
-            resultsDiv.appendChild(resultsHeader);
+function showResults(rolls, successes, ones, netSuccesses, difficulty, dicePool, willpower, criticalExtra, combatMode) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = '';
 
-            const successDiv = document.createElement('div');
-            successDiv.textContent = `Success: ${successes}`;
-            resultsDiv.appendChild(successDiv);
+    // Show dice rolls
+    const rollsHeader = document.createElement('div');
+    rollsHeader.className = 'bold';
+    rollsHeader.textContent = 'Rolling Dice:';
+    resultsDiv.appendChild(rollsHeader);
 
-            const onesDiv = document.createElement('div');
-            onesDiv.textContent = `Ones: ${ones}`;
-            resultsDiv.appendChild(onesDiv);
-
-            if(willpower) {
-                const willpowerDiv = document.createElement('div');
-                willpowerDiv.className = 'bold';
-                willpowerDiv.textContent = 'Willpower +1';
-                willpowerDiv.style.color = '#ff9900';
-                willpowerDiv.style.textShadow = '0 0 8px rgba(255,153,0,0.4)';
-                resultsDiv.appendChild(willpowerDiv);
-            }
-
-            // Show final outcome
-            const outcome = document.createElement('div');
-            outcome.className = 'bold';
-            outcome.style.marginTop = '1rem';
-            outcome.style.fontSize = '1.2rem';
-            
-            if (netSuccesses > 0) {
-                outcome.textContent = `Total Success: ${netSuccesses} - ACTION SUCCESSFUL!`;
-                outcome.style.color = '#00ff00';
-                outcome.style.textShadow = '0 0 8px rgba(0,255,0,0.4)';
-            } else if (netSuccesses === 0) {
-                outcome.textContent = 'Total Success: 0 - ACTION FAILED!';
-                outcome.style.color = '#ff0000';
-                outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
-            } else {
-                outcome.textContent = 'Total Success: 0 - BOTCH!';
-                outcome.style.color = '#ff0000';
-                outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
-            }
-            
-            resultsDiv.appendChild(outcome);
-
-
-            // Sonuçları gösterdikten sonra geçmişe ekle
-            const rollData = {
-                date: new Date().toLocaleString(),
-                dicePool: dicePool,
-                difficulty: difficulty,
-                rolls: rolls,
-                successes: successes,
-                ones: ones,
-                netSuccesses: netSuccesses,
-                willpower: willpower,
-                critical: criticalExtra
-            };
-            
-            addToHistory(rollData);
+    const rollsContainer = document.createElement('div');
+    rollsContainer.style.margin = '1rem 0';
+    
+    rolls.forEach(roll => {
+        const die = document.createElement('span');
+        die.className = 'dice-result';
+        die.textContent = roll;
+        
+        if (roll === 10) {
+            die.classList.add('crit');
+        } else if (roll === 1) {
+            die.classList.add('botch');
         }
+        rollsContainer.appendChild(die);
+    });
 
-        function addToHistory(data) {
-            rollHistory.unshift(data);
-            
-            // Maksimum 15 kayıt tut
-            if(rollHistory.length > 15) {
-                rollHistory.pop();
-            }
-            
-            localStorage.setItem('vtmDiceHistory', JSON.stringify(rollHistory));
-            updateHistoryDisplay();
-        }
+    // Toplamı ekle
+    const rollsSum = document.createElement('span');
+    rollsSum.className = 'rolls-sum';
+    rollsSum.textContent = `(${rolls.reduce((a, b) => a + b, 0)})`;
+    rollsContainer.appendChild(rollsSum);
 
-        function clearHistory() {
-            if(confirm("Are you sure you want to permanently delete all history?")) {
-                rollHistory = [];
-                localStorage.removeItem('vtmDiceHistory');
-                updateHistoryDisplay();
-            }
-        }
+    resultsDiv.appendChild(rollsContainer);
 
-        function updateHistoryDisplay() {
-            const historyList = document.getElementById('history-list');
-            historyList.innerHTML = '';
-            
-            rollHistory.forEach((item, index) => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
-                historyItem.innerHTML = `
-                    
-                    <div class="history-details">
-                        <div>Dice Pool: ${item.dicePool}</div>
-                        <div>Difficulty: ${item.difficulty}</div>
-                        <div class="history-rolls">
-                            ${item.rolls.map(roll => 
-                                `<span class="history-dice ${roll === 10 ? 'crit' : ''} ${roll === 1 ? 'botch' : ''}">
-                                    ${roll}
-                                </span>`
-                            ).join('')}
-                        </div>
-                        <div>Success: ${item.successes}</div>
-                        <div>Ones: ${item.ones}</div>
-                        <div>Critical Success: ${item.critical ? 'Yes' : 'No'}</div>
-                        <div>Willpower: ${item.willpower ? 'Yes' : 'No'}</div>
-                        <div>Total Success: ${item.netSuccesses} | ${item.netSuccesses > 0 ? '✅' : item.netSuccesses < 0 ? '❌' : '➖'}</div>
-                    </div>
-                `;
-                
-                // Detayları göster/gizle
-                const details = historyItem.querySelector('.history-details');
-                details.classList.toggle('show');
-                
+    // Show results breakdown
+    const resultsHeader = document.createElement('div');
+    resultsHeader.className = 'bold';
+    resultsHeader.textContent = 'Results:';
+    resultsDiv.appendChild(resultsHeader);
 
-                historyList.appendChild(historyItem);
-            });
-        }
+    const successDiv = document.createElement('div');
+    successDiv.textContent = `Success: ${successes}`;
+    resultsDiv.appendChild(successDiv);
 
-        // Sayfa yüklendiğinde geçmişi göster
+    const onesDiv = document.createElement('div');
+    onesDiv.textContent = `Ones: ${ones}`;
+    resultsDiv.appendChild(onesDiv);
+
+    if(willpower) {
+        const willpowerDiv = document.createElement('div');
+        willpowerDiv.className = 'bold';
+        willpowerDiv.textContent = 'Willpower +1';
+        willpowerDiv.style.color = '#ff9900';
+        willpowerDiv.style.textShadow = '0 0 8px rgba(255,153,0,0.4)';
+        resultsDiv.appendChild(willpowerDiv);
+    }
+
+    if (combatMode) {
+        const combatDiv = document.createElement('div');
+        combatDiv.className = 'bold';
+        combatDiv.textContent = 'Combat Mode';
+        combatDiv.style.color = '#00bfff';
+        combatDiv.style.textShadow = '0 0 8px rgba(0,191,255,0.4)';
+        resultsDiv.appendChild(combatDiv);
+    }
+
+    // Show final outcome
+    const outcome = document.createElement('div');
+    outcome.className = 'bold';
+    outcome.style.marginTop = '1rem';
+    outcome.style.fontSize = '1.2rem';
+    
+    if (netSuccesses > 0) {
+        outcome.textContent = `Total Success: ${netSuccesses} - ACTION SUCCESSFUL!`;
+        outcome.style.color = '#00ff00';
+        outcome.style.textShadow = '0 0 8px rgba(0,255,0,0.4)';
+    } else if (netSuccesses === 0) {
+        outcome.textContent = 'Total Success: 0 - ACTION FAILED!';
+        outcome.style.color = '#ff0000';
+        outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
+    } else {
+        outcome.textContent = 'Total Success: 0 - BOTCH!';
+        outcome.style.color = '#ff0000';
+        outcome.style.textShadow = '0 0 8px rgba(255,0,0,0.4)';
+    }
+    
+    resultsDiv.appendChild(outcome);
+
+    // Sonuçları geçmişe ekle
+    const rollData = {
+        date: new Date().toLocaleString(),
+        dicePool: dicePool,
+        difficulty: difficulty,
+        rolls: rolls,
+        successes: successes,
+        ones: ones,
+        netSuccesses: netSuccesses,
+        willpower: willpower,
+        critical: criticalExtra,
+        combatMode: combatMode
+    };
+    
+    addToHistory(rollData);
+}
+
+function addToHistory(data) {
+    rollHistory.unshift(data);
+    
+    // Maksimum 15 kayıt tut
+    if(rollHistory.length > 15) {
+        rollHistory.pop();
+    }
+    
+    localStorage.setItem('vtmDiceHistory', JSON.stringify(rollHistory));
+    updateHistoryDisplay();
+}
+
+function clearHistory() {
+    if(confirm("Are you sure you want to permanently delete all history?")) {
+        rollHistory = [];
+        localStorage.removeItem('vtmDiceHistory');
         updateHistoryDisplay();
-    </script>
+    }
+}
+
+function updateHistoryDisplay() {
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
+    
+    rollHistory.forEach((item, index) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        historyItem.innerHTML = `
+            <div class="history-details show">
+                <div>Dice Pool: ${item.dicePool}</div>
+                <div>Difficulty: ${item.difficulty}</div>
+                <div class="history-rolls">
+                    ${item.rolls.map(roll =>
+                        `<span class="history-dice ${roll === 10 ? 'crit' : ''} ${roll === 1 ? 'botch' : ''}">${roll}</span>`
+                    ).join('')}
+                    <span class="rolls-sum">
+                        (${item.rolls.reduce((a, b) => a + b, 0)})
+                    </span>
+                </div>
+                <div>Success: ${item.successes}</div>
+                <div>Ones: ${item.ones}</div>
+                <div>Critical Success: ${item.critical ? 'Yes' : 'No'}</div>
+                <div>Willpower: ${item.willpower ? 'Yes' : 'No'}</div>
+                <div>Combat Mode: ${item.combatMode ? 'Yes' : 'No'}</div>
+                <div>Total Success: ${item.netSuccesses} | ${item.netSuccesses > 0 ? '✅' : item.netSuccesses < 0 ? '❌' : '➖'}</div>
+            </div>
+        `;
+        historyList.appendChild(historyItem);
+    });
+}
+
+// Sayfa yüklendiğinde geçmişi göster
+updateHistoryDisplay();
+</script>
 </body>
 </html>
